@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudentPortal</title>
+  <link rel="stylesheet" href="../style.css"/>
+</head>
+<body>
+  <div class="landing-wrap">
+    <div class="landing-card">
+      <div class="landing-logo">Student<span>Portal</span></div>
+      <a href="login.html" class="btn btn-primary" style="display:flex;">Login to Your Account</a>
+      <div class="divider">or</div>
+      <a href="register.html" class="btn btn-outline" style="display:flex;">Create New Account</a>
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script>
+    if (Session.isLoggedIn()) window.location.href = 'dashboard.html';
+  </script>
+</body>
+</html>
