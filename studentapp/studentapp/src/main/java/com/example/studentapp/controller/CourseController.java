@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.studentapp.dto.ApiResponse;
 import com.example.studentapp.dto.EnrollmentRequest;
-import com.example.studentapp.entity.Course;
+import com.example.studentapp.entity.CourseBean;
+import com.example.studentapp.exception.AppException;
 import com.example.studentapp.service.CourseService;
 
 @RestController
@@ -26,21 +27,21 @@ public class CourseController {
 
     // ── Get all courses ───────────────────────────────────────
     @GetMapping("/courses")
-    public ResponseEntity<List<Course>> getAllCourses() {
+    public ResponseEntity<List<CourseBean>> getAllCourses() throws AppException {
         return ResponseEntity.ok(courseService.getAllCourses());
     }
 
     // ── Enroll ────────────────────────────────────────────────
     @PostMapping("/enroll/{courseId}")
     public ResponseEntity<ApiResponse> enroll(@PathVariable Long courseId,
-                                              @RequestBody EnrollmentRequest enrollmentRequest) {
+                                              @RequestBody EnrollmentRequest enrollmentRequest) throws AppException {
         return ResponseEntity.ok(courseService.enrollStudent(enrollmentRequest.getStudentId(), courseId));
     }
 
     // ── Unenroll ──────────────────────────────────────────────
     @DeleteMapping("/enroll/{courseId}")
     public ResponseEntity<ApiResponse> unEnroll(@PathVariable Long courseId,
-                                                @RequestBody EnrollmentRequest enrollmentRequest) {
+                                                @RequestBody EnrollmentRequest enrollmentRequest) throws AppException {
         return ResponseEntity.ok(courseService.unEnrollStudent(enrollmentRequest.getStudentId(), courseId));
     }
 }

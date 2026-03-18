@@ -77,20 +77,20 @@ async function doEnroll(courseId) {
     });
     const data = await res.json();
 
-    if (data.status !== 'error') {
-      enrolledIds.add(courseId);
-      seatMap[courseId].avail = Math.max(0, seatMap[courseId].avail - 1);
-      const availCell = document.getElementById('avail-' + courseId);
-      if (availCell) availCell.innerHTML = availBadge(seatMap[courseId].avail);
-      btn.className = 'btn btn-sm btn-enrolled';
-      btn.innerHTML = '&#10003; Enrolled';
-      btn.disabled = true;
-      showToast('✓ ' + data.message, 'success');
-    } else {
-      showToast('✗ ' + data.message, 'error');
-      btn.disabled = false;
-      btn.innerHTML = '+ Enroll';
-    }
+    if (res.ok) {
+    enrolledIds.add(courseId);
+    seatMap[courseId].avail = Math.max(0, seatMap[courseId].avail - 1);
+    const availCell = document.getElementById('avail-' + courseId);
+    if (availCell) availCell.innerHTML = availBadge(seatMap[courseId].avail);
+    btn.className = 'btn btn-sm btn-enrolled';
+    btn.innerHTML = '&#10003; Enrolled';
+    btn.disabled = true;
+    showToast('✓ ' + data.message, 'success');
+} else {
+    showToast('✗ ' + data.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '+ Enroll';
+}
   } catch (e) {
     showToast('✗ Server error. Please try again.', 'error');
     btn.disabled = false;
@@ -108,7 +108,7 @@ async function loadData() {
     const courses = await cRes.json();
     if (eRes.ok) {
       const enrolled = await eRes.json();
-      enrolled.forEach(e => enrolledIds.add(e.courseId));
+      enrolled.forEach(e => enrolledIds.add(e.id));
     }
     renderTable(courses);
   } catch (e) {

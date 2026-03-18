@@ -5,12 +5,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "COURSE")
-public class Course {
+public class CourseBean {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,9 +31,9 @@ public class Course {
 	@Column(name = "AVAILABLE_SEATS")
 	private int availableSeats;
 	
-	public Course() {}
+	public CourseBean() {}
 
-	public Course(Long id, String name, String description, String duration, int totalSeats, int availableSeats) {
+	public CourseBean(Long id, String name, String description, String duration, int totalSeats, int availableSeats) {
 		super();
 		this.id = id;
 		this.name = name;

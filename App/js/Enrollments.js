@@ -15,27 +15,27 @@ function renderTable(list) {
   }
 
   const rows = list.map(c => `
-    <tr id="row-${c.courseId}">
-      <td><strong>#${c.courseId}</strong></td>
-      <td><strong>${escHtml(c.courseName)}</strong></td>
+    <tr id="row-${c.id}">
+      <td><strong>#${c.id}</strong></td>
+      <td><strong>${escHtml(c.name)}</strong></td>
       <td>
-        <button class="btn btn-sm btn-toggle" id="tbtn-${c.courseId}"
-          onclick="toggleDetails(${c.courseId})">
+        <button class="btn btn-sm btn-toggle" id="tbtn-${c.id}"
+          onclick="toggleDetails(${c.id})">
           &#9660; View Details
         </button>
       </td>
       <td>
-        <button class="btn btn-sm btn-unenroll" id="ubtn-${c.courseId}"
-          onclick="doUnenroll(${c.courseId})">
+        <button class="btn btn-sm btn-unenroll" id="ubtn-${c.id}"
+          onclick="doUnenroll(${c.id})">
           &#10005; Unenroll
         </button>
       </td>
     </tr>
-    <tr class="details-row" id="drow-${c.courseId}" style="display:none;">
+    <tr class="details-row" id="drow-${c.id}" style="display:none;">
       <td colspan="4">
         <div class="details-inner">
-          <span class="d-label">Course ID</span>     <span class="d-val">${c.courseId}</span>
-          <span class="d-label">Course Name</span>   <span class="d-val">${escHtml(c.courseName)}</span>
+          <span class="d-label">Course ID</span>     <span class="d-val">${c.id}</span>
+          <span class="d-label">Course Name</span>   <span class="d-val">${escHtml(c.name)}</span>
           <span class="d-label">Duration</span>      <span class="d-val">${escHtml(c.duration || 'N/A')}</span>
           <span class="d-label">Description</span>   <span class="d-val">${escHtml(c.description || 'No description available.')}</span>
         </div>
@@ -86,21 +86,21 @@ async function doUnenroll(courseId) {
     });
     const data = await res.json();
 
-    if (data.status !== 'error') {
-      showToast('✓ ' + data.message, 'success');
-      document.getElementById('row-' + courseId)?.remove();
-      document.getElementById('drow-' + courseId)?.remove();
-      openRows.delete(courseId);
-      const remaining = document.querySelectorAll('#enrollTable tbody tr:not(.details-row)').length;
-      if (remaining === 0) {
+    if (res.ok) {
+    showToast('✓ ' + data.message, 'success');
+    document.getElementById('row-' + courseId)?.remove();
+    document.getElementById('drow-' + courseId)?.remove();
+    openRows.delete(courseId);
+    const remaining = document.querySelectorAll('#enrollTable tbody tr:not(.details-row)').length;
+    if (remaining === 0) {
         document.getElementById('content').innerHTML = `
           <div class="empty-msg">No enrollments yet. <a href="courses.html">Browse courses &#8594;</a></div>`;
-      }
-    } else {
-      showToast('✗ ' + data.message, 'error');
-      btn.disabled = false;
-      btn.innerHTML = '&#10005; Unenroll';
     }
+} else {
+    showToast('✗ ' + data.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '&#10005; Unenroll';
+}
   } catch (e) {
     showToast('✗ Server error. Please try again.', 'error');
     btn.disabled = false;

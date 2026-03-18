@@ -20,6 +20,17 @@ public class GlobalExceptionHandler {
         return body;
     }
 
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<Map<String, String>> handleAppException(AppException ex) {
+        HttpStatus status = switch (ex.getType()) {
+            case CONFLICT            -> HttpStatus.CONFLICT;                // 409
+            case NOT_FOUND           -> HttpStatus.NOT_FOUND;               // 404
+            case INVALID_CREDENTIALS -> HttpStatus.UNAUTHORIZED;            // 401
+            case DB_ERROR            -> HttpStatus.INTERNAL_SERVER_ERROR;   // 500
+        };
+        return new ResponseEntity<>(errorBody(ex.getTitle(), ex.getMessage()), status);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
@@ -33,28 +44,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    
-    //For emailAlreadyRegistered,courseFull,alreadyRolled
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<Map<String, String>> handleConflict(ConflictException ex) {
-        return ResponseEntity.ok(errorBody(ex.getTitle(), ex.getMessage()));
-    }
-    
-    //For acc/course/enroolment not found
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.ok(errorBody(ex.getTitle(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidCredentials(InvalidCredentialsException ex) {
-        return ResponseEntity.ok(errorBody("Invalid Credentials", ex.getMessage()));
-    }
-
-    // ── Unexpected crash — genuine HTTP 500 ──────────────────
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneric(Exception ex) {
         return new ResponseEntity<>(errorBody("Internal Server Error", ex.getMessage()),
-                HttpStatus.INTERNAL_SERVER_ERROR);
+            HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

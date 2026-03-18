@@ -1,5 +1,5 @@
 // ── Backend URL ───────────────────────────────────────────
-const BASE_URL = 'http://localhost:9090';
+const BASE_URL = 'http://localhost:9092';
 
 // ── CORS-aware fetch: always sends session cookie ─────────
 async function apiFetch(path, options = {}) {

@@ -6,18 +6,14 @@ import java.util.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+
 
 @Entity
 @Table(name = "STUDENT")
-public class Student {
+public class StudentBean {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)	@Column(name = "ID")
@@ -37,8 +33,8 @@ public class Student {
     @Column(name = "CREATED_AT")
 	private Date createdAt;
 	
-	public Student() {}
-	public Student(Long id, String name, String email, String password, Date createdAt) {
+	public StudentBean() {}
+	public StudentBean(Long id, String name, String email, String password, Date createdAt) {
 		super();
 		this.id = id;
 		this.name = name;

@@ -17,6 +17,7 @@ import com.example.studentapp.dto.EnrolledCourseResponse;
 import com.example.studentapp.dto.LoginRequest;
 import com.example.studentapp.dto.LoginResponse;
 import com.example.studentapp.dto.RegisterRequest;
+import com.example.studentapp.exception.AppException;
 import com.example.studentapp.service.CourseService;
 import com.example.studentapp.service.StudentService;
 
@@ -36,7 +37,7 @@ public class StudentController {
 
     // ── Register ─────────────────────────────────────────────
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest registerRequest) throws AppException {
         studentService.register(registerRequest);
         return ResponseEntity.ok(ApiResponse.success("Registration successful"));
     }
@@ -44,7 +45,7 @@ public class StudentController {
     // ── Login: returns JSON + sets server-side session ────────
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest,
-                                               HttpSession session) {
+                                               HttpSession session) throws AppException {
         LoginResponse resp = studentService.login(loginRequest.getEmail(), loginRequest.getPassword());
         session.setAttribute("studentId", resp.getStudentId());   // server session
         session.setAttribute("studentName", resp.getName());       // server session
@@ -60,7 +61,7 @@ public class StudentController {
 
     // ── Get enrolled courses for a student ───────────────────
     @GetMapping("/{studentId}/enrollments")
-    public ResponseEntity<List<EnrolledCourseResponse>> getMyEnrollments(@PathVariable Long studentId) {
+    public ResponseEntity<List<EnrolledCourseResponse>> getMyEnrollments(@PathVariable Long studentId) throws AppException {
         return ResponseEntity.ok(courseService.getStudentEnrolledCourses(studentId));
     }
 }

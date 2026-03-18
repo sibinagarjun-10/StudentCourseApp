@@ -3,16 +3,18 @@ package com.example.studentapp.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+
 import com.example.studentapp.dto.ApiResponse;
 import com.example.studentapp.dto.EnrolledCourseResponse;
-import com.example.studentapp.entity.Course;
-import com.example.studentapp.entity.Enrollment;
-import com.example.studentapp.exception.ConflictException;
-import com.example.studentapp.exception.ResourceNotFoundException;
+import com.example.studentapp.entity.CourseBean;
+import com.example.studentapp.exception.AppException;
 import com.example.studentapp.repository.CourseRepository;
-import com.example.studentapp.repository.EnrollmentRepository;
-import com.example.studentapp.util.EnrollmentUtil;
+import com.example.studentapp.util.CourseManager;
+import com.example.studentapp.util.EnrollmentManager;
+
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -24,72 +26,55 @@ public class CourseService {
     private CourseRepository courseRepository;
 
     @Autowired
-    private EnrollmentRepository enrollmentRepository;
+    private CourseManager courseManager;
 
     @Autowired
-    private EnrollmentUtil enrollmentUtil;
+    private EnrollmentManager enrollmentManager;
 
-    public List<Course> getAllCourses() {
-        log.info("Fetching all courses");
-        List<Course> courses = courseRepository.findAll();
-        log.debug("Total courses found: {}", courses.size());
-        return courses;
+    public List<CourseBean> getAllCourses() throws AppException {
+        try {
+            log.info("Fetching all courses");
+            List<CourseBean> courses = courseRepository.findAll();
+            log.debug("Total courses found: {}", courses.size());
+            return courses;
+        } catch (DataAccessException e) {
+            log.error("DB error while fetching all courses", e);
+            throw AppException.dbError("Unable to fetch courses. Please try again.");
+        }
     }
 
-    public ApiResponse enrollStudent(Long studentId, Long courseId) {
+    public ApiResponse enrollStudent(Long studentId, Long courseId) throws AppException {
         log.info("Enroll request — studentId: {}, courseId: {}", studentId, courseId);
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> {
-                    log.warn("Enroll failed — course not found: {}", courseId);
-                    return new ResourceNotFoundException(courseId);
-                });
-        if (course.getAvailableSeats() <= 0) {
-            log.warn("Enroll failed — course full: {}", course.getName());
-            throw ConflictException.courseFull(course.getName());
-        }
-        Enrollment existing = enrollmentRepository.findByStudentIdAndCourseId(studentId, courseId);
-        if (existing != null) {
-            log.warn("Enroll failed — student {} already enrolled in course {}", studentId, courseId);
-            throw ConflictException.alreadyEnrolled(courseId);
-        }
-        enrollmentUtil.enrollUtil(studentId, courseId, enrollmentRepository);
-        course.setAvailableSeats(course.getAvailableSeats() - 1);
-        courseRepository.save(course);
+        CourseBean course = courseManager.findCourseOrThrow(courseId);
+        courseManager.checkSeatAvailability(course);
+        courseManager.checkNotAlreadyEnrolled(studentId, courseId);
+        enrollmentManager.saveEnrollment(studentId, courseId);
+        courseManager.decrementSeat(course);
         log.info("Student {} enrolled in '{}' successfully", studentId, course.getName());
         return ApiResponse.success("Successfully enrolled in " + course.getName());
     }
 
-    public ApiResponse unEnrollStudent(Long studentId, Long courseId) {
+    public ApiResponse unEnrollStudent(Long studentId, Long courseId) throws AppException {
         log.info("Unenroll request — studentId: {}, courseId: {}", studentId, courseId);
-        Enrollment enrollment = enrollmentRepository.findByStudentIdAndCourseId(studentId, courseId);
-        if (enrollment == null) {
-            log.warn("Unenroll failed — no enrollment found for studentId: {}, courseId: {}", studentId, courseId);
-            throw new ResourceNotFoundException(studentId, courseId);
-        }
-        enrollmentRepository.delete(enrollment);
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> {
-                    log.warn("Unenroll — course not found after deletion: {}", courseId);
-                    return new ResourceNotFoundException(courseId);
-                });
-        course.setAvailableSeats(course.getAvailableSeats() + 1);
-        courseRepository.save(course);
+        courseManager.checkEnrollmentExists(studentId, courseId);
+        enrollmentManager.deleteEnrollment(studentId, courseId);
+        CourseBean course = courseManager.findCourseOrThrow(courseId);
+        courseManager.incrementSeat(course);
         log.info("Student {} unenrolled from '{}' successfully", studentId, course.getName());
         return ApiResponse.success("Successfully unenrolled from " + course.getName());
     }
 
-    public List<EnrolledCourseResponse> getStudentEnrolledCourses(Long studentId) {
-        log.info("Fetching enrollments for studentId: {}", studentId);
-        List<Enrollment> myEnrollments = enrollmentRepository.findByStudentId(studentId);
-        log.debug("Enrollment count for studentId {}: {}", studentId, myEnrollments.size());
-        return myEnrollments.stream()
-                .map(enrollment -> courseRepository.findById(enrollment.getCourseId()).orElse(null))
-                .filter(course -> course != null)
-                .map(course -> new EnrolledCourseResponse(
-                        course.getId(),
-                        course.getName(),
-                        course.getDescription(),
-                        course.getDuration()))
-                .toList();
+    public List<EnrolledCourseResponse> getStudentEnrolledCourses(Long studentId) throws AppException {
+        try {
+            log.info("Fetching enrollments for studentId: {}", studentId);
+            List<Long> courseIds = enrollmentManager.getEnrolledCourseIds(studentId);
+            log.debug("Enrolled course IDs for studentId {}: {}", studentId, courseIds);
+            return courseRepository.findByIdIn(courseIds);
+        } catch (AppException e) {
+            throw e;
+        } catch (DataAccessException e) {
+            log.error("DB error while fetching enrolled courses for studentId: {}", studentId, e);
+            throw AppException.dbError("Unable to fetch enrolled courses. Please try again.");
+        }
     }
 }

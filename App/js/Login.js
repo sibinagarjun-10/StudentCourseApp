@@ -50,13 +50,14 @@ async function doLogin() {
     const data = await res.json();
 
     // Check data.status because business errors now return 200 OK
-    if (data.status !== 'error') {
-      Session.set(data.studentId, data.name, email);
-      window.location.href = 'dashboard.html';
-    } else {
-      document.getElementById('errAlert').textContent = '✗ ' + data.message;
-      document.getElementById('errAlert').classList.add('show');
-    }
+    // AFTER
+if (res.ok) {
+    Session.set(data.studentId, data.name, email);
+    window.location.href = 'dashboard.html';
+} else {
+    document.getElementById('errAlert').textContent = '✗ ' + data.message;
+    document.getElementById('errAlert').classList.add('show');
+}
   } catch (e) {
     document.getElementById('errAlert').textContent = '✗ Cannot reach server. Is backend running on port 9091?';
     document.getElementById('errAlert').classList.add('show');

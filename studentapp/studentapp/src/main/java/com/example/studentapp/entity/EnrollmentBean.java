@@ -6,7 +6,6 @@ import java.util.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -19,7 +18,7 @@ import jakarta.persistence.UniqueConstraint;
 	        @UniqueConstraint(columnNames = {"STUDENT_ID", "COURSE_ID"})
 	    }
 	)
-public class Enrollment {
+public class EnrollmentBean {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,9 +35,9 @@ public class Enrollment {
     @Column(name = "ENROLLED_AT")
 	private Date enrolledAt;
 	
-	public Enrollment() {}
+	public EnrollmentBean() {}
 
-	public Enrollment(Long id, Long studentId, Long courseId, Date enrolledAt) {
+	public EnrollmentBean(Long id, Long studentId, Long courseId, Date enrolledAt) {
 		super();
 		this.id = id;
 		this.studentId = studentId;

@@ -65,19 +65,18 @@ async function doRegister() {
     });
     const data = await res.json();
 
-    if (data.status !== 'error') {
-      // Success — keep button disabled, show message, redirect
-      btn.innerHTML = '✓ Registered!';
-      document.getElementById('okAlert').textContent = '✓ ' + data.message + ' Redirecting to login...';
-      document.getElementById('okAlert').classList.add('show');
-      setTimeout(() => window.location.href = 'login.html', 2000);
-    } else {
-      // Business error from backend — re-enable button
-      document.getElementById('errAlert').textContent = '✗ ' + data.message;
-      document.getElementById('errAlert').classList.add('show');
-      btn.disabled = false;
-      btn.innerHTML = 'Register';
-    }
+    // AFTER
+if (res.ok) {
+    btn.innerHTML = '✓ Registered!';
+    document.getElementById('okAlert').textContent = '✓ ' + data.message + ' Redirecting to login...';
+    document.getElementById('okAlert').classList.add('show');
+    setTimeout(() => window.location.href = 'login.html', 2000);
+} else {
+    document.getElementById('errAlert').textContent = '✗ ' + data.message;
+    document.getElementById('errAlert').classList.add('show');
+    btn.disabled = false;
+    btn.innerHTML = 'Register';
+}
   } catch (e) {
     // Network/server error — re-enable button
     document.getElementById('errAlert').textContent = '✗ Cannot reach server. Is the backend running on port 9091?';
